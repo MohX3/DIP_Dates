@@ -7,7 +7,7 @@ from pathlib import Path
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-def process_image(input_path, output_path):
+def process_image(input_path, output_path, jpeg_quality=90):
     # Read the image in grayscale
     image_gray = cv2.imread(str(input_path), cv2.IMREAD_GRAYSCALE)
     if image_gray is None:
@@ -72,15 +72,12 @@ def process_image(input_path, output_path):
             if dilated_contours:
                 x, y, w, h = cv2.boundingRect(dilated_contours[0])
 
-                # Crop the image to the bounding box
+                # Crop the image to the bounding box without resizing
                 cropped_image = image_gray[y:y+h, x:x+w]
 
-                # Resize the cropped image to 1024x1024
-                resized_image = cv2.resize(cropped_image, (1024, 1024))
-
-                # Save the resized image
-                cv2.imwrite(str(output_path), resized_image)
-                logging.info(f"Saved cropped and resized image to {output_path}")
+                # Save the cropped image in JPEG format with high quality
+                cv2.imwrite(str(output_path), cropped_image, [cv2.IMWRITE_JPEG_QUALITY, jpeg_quality])
+                logging.info(f"Saved cropped image to {output_path}")
             else:
                 logging.warning(f"No contours found after dilation in {input_path}")
         else:
@@ -90,18 +87,15 @@ def process_image(input_path, output_path):
             fallback_w, fallback_h = int(0.9 * width), int(0.9 * height)
             cropped_image = image_gray[fallback_y:fallback_y+fallback_h, fallback_x:fallback_x+fallback_w]
 
-            # Resize the fallback cropped image to 1024x1024
-            resized_image = cv2.resize(cropped_image, (1024, 1024))
-
-            # Save the resized fallback image
-            cv2.imwrite(str(output_path), resized_image)
-            logging.info(f"Used fallback bounding box and saved resized image for {output_path}")
+            # Save the fallback cropped image in JPEG format with high quality
+            cv2.imwrite(str(output_path), cropped_image, [cv2.IMWRITE_JPEG_QUALITY, jpeg_quality])
+            logging.info(f"Used fallback bounding box and saved cropped image for {output_path}")
     else:
         logging.warning(f"No contours detected in {input_path}")
 
 # Paths
 input_folder = Path('D:/Desktop/AI361/project/dates-contest-images')
-output_folder = Path('D:/Desktop/AI361/project/output-images-cropped')
+output_folder = Path('D:/Desktop/AI361/project/output-images')
 output_folder.mkdir(parents=True, exist_ok=True)
 
 # Process each image
