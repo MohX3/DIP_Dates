@@ -7,8 +7,7 @@ from pathlib import Path
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-
-def process_image(input_path, output_path, debug=False):
+def process_image(input_path, output_path):
     # Read the image in grayscale
     image_gray = cv2.imread(str(input_path), cv2.IMREAD_GRAYSCALE)
     if image_gray is None:
@@ -61,7 +60,6 @@ def process_image(input_path, output_path, debug=False):
             hull = cv2.convexHull(closest_contour)
             epsilon = 0.01 * cv2.arcLength(hull, True)
             approx = cv2.approxPolyDP(hull, epsilon, True)
-            cv2.drawContours(image_gray, [approx], -1, (0, 255, 0), 2)  # Green contour
 
             # Create a mask for the contour and dilate it
             contour_mask = np.zeros_like(image_gray)
@@ -73,10 +71,16 @@ def process_image(input_path, output_path, debug=False):
             dilated_contours, _ = cv2.findContours(dilated_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             if dilated_contours:
                 x, y, w, h = cv2.boundingRect(dilated_contours[0])
-                # Draw bounding box with padding around the object
-                cv2.rectangle(image_gray, (x, y), (x + w, y + h), (255, 0, 0), 2)  # Blue box
-                cv2.imwrite(str(output_path), image_gray)
-                logging.info(f"Saved image with bounding box to {output_path}")
+
+                # Crop the image to the bounding box
+                cropped_image = image_gray[y:y+h, x:x+w]
+
+                # Resize the cropped image to 1024x1024
+                resized_image = cv2.resize(cropped_image, (1024, 1024))
+
+                # Save the resized image
+                cv2.imwrite(str(output_path), resized_image)
+                logging.info(f"Saved cropped and resized image to {output_path}")
             else:
                 logging.warning(f"No contours found after dilation in {input_path}")
         else:
@@ -84,26 +88,20 @@ def process_image(input_path, output_path, debug=False):
             # Use a fallback bounding box (almost entire image)
             fallback_x, fallback_y = int(0.05 * width), int(0.05 * height)
             fallback_w, fallback_h = int(0.9 * width), int(0.9 * height)
-            cv2.rectangle(image_gray, (fallback_x, fallback_y), (fallback_x + fallback_w, fallback_y + fallback_h),
-                          (255, 0, 0), 2)  # Fallback box
-            cv2.imwrite(str(output_path), image_gray)
-            logging.info(f"Used fallback bounding box for {output_path}")
+            cropped_image = image_gray[fallback_y:fallback_y+fallback_h, fallback_x:fallback_x+fallback_w]
+
+            # Resize the fallback cropped image to 1024x1024
+            resized_image = cv2.resize(cropped_image, (1024, 1024))
+
+            # Save the resized fallback image
+            cv2.imwrite(str(output_path), resized_image)
+            logging.info(f"Used fallback bounding box and saved resized image for {output_path}")
     else:
         logging.warning(f"No contours detected in {input_path}")
 
-    # Optional debug images
-    if debug:
-        debug_folder = output_path.parent / 'debug'
-        debug_folder.mkdir(exist_ok=True, parents=True)
-        cv2.imwrite(str(debug_folder / f"{input_path.stem}_enhanced.jpg"), enhanced)
-        cv2.imwrite(str(debug_folder / f"{input_path.stem}_denoised.jpg"), denoised)
-        cv2.imwrite(str(debug_folder / f"{input_path.stem}_thresh.jpg"), thresh)
-        cv2.imwrite(str(debug_folder / f"{input_path.stem}_combined.jpg"), combined)
-
-
 # Paths
-input_folder = Path('D:/Desktop/AI361/project/enhanced-images13')
-output_folder = Path('D:/Desktop/AI361/project/output-images')
+input_folder = Path('D:/Desktop/AI361/project/dates-contest-images')
+output_folder = Path('D:/Desktop/AI361/project/output-images-cropped')
 output_folder.mkdir(parents=True, exist_ok=True)
 
 # Process each image
@@ -111,4 +109,4 @@ for filename in input_folder.iterdir():
     if filename.suffix.lower() in ('.jpg', '.jpeg', '.png'):
         input_path = filename
         output_path = output_folder / filename.name
-        process_image(input_path, output_path, debug=True)
+        process_image(input_path, output_path)
