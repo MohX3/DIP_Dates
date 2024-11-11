@@ -129,8 +129,8 @@ def process_images_in_parallel(input_folder, output_folder, resize_width=None, j
 
 
 # Example usage
-input_folder = 'C:\\Users\\96658\\Desktop\\AI361\\project\\dates-contest-images'
-output_folder = 'C:\\Users\\96658\\Desktop\\AI361\\project\\enhanced-images16'
+input_folder = 'D:\\Desktop\\AI361\\project\\dates-contest-images'
+output_folder = 'D:\\Desktop\\AI361\\project\\enhanced-images16'
 resize_width = 1800  # Resize width, adjust as necessary
 jpeg_quality = 80  # Max JPEG quality to maintain under the 80 MB file size limit
 max_workers = 4  # Number of workers for parallel processing
