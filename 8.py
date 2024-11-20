@@ -86,16 +86,14 @@ def process_image(img_path):
     resized_img = resize_image(img, target_width=1440)
 
     # Uncomment the following lines if you want to apply masking
-    #mask = segment_date(resized_img)
-    #masked_img = apply_mask(resized_img, mask)
+    # mask = segment_date(resized_img)
+    # masked_img = apply_mask(resized_img, mask)
 
     cropped_img = cut(resized_img)
-    #d_img = cv2.medianBlur(cropped_img, 3)
-    #SandT_img = cv2.GaussianBlur(cropped_img, (3, 3), 0)
-    #FNLM_img = cv2.fastNlMeansDenoisingColored(cropped_img, None, 10, 10, 7, 21)
     median_img = cv2.bilateralFilter(cropped_img, 3, 3, 10)
     enhanced_img = clahe(median_img)
-    #log_img = log_transform(cv2.cvtColor(enhanced_img, cv2.COLOR_RGB2GRAY))
+    # Uncomment the following line if you want to apply log transformation
+    # log_img = log_transform(cv2.cvtColor(enhanced_img, cv2.COLOR_RGB2GRAY))
     sharpened_img = cv2.pyrUp(enhanced_img)
     gamma_img = gamma_correction_light(sharpened_img)
 
@@ -109,7 +107,7 @@ def save_image_with_pillow(image, output_path, jpeg_quality):
 
 
 # Function 8: Process a single image
-def process_single_image(img_path, output_folder, jpeg_quality=95):
+def process_single_image(img_path, output_folder, jpeg_quality=80):
     filename = os.path.basename(img_path)
     try:
         enhanced_image = process_image(img_path)
@@ -125,7 +123,7 @@ def process_single_image(img_path, output_folder, jpeg_quality=95):
 
 
 # Function 9: Process images in parallel
-def process_images_in_parallel(input_folder, output_folder, jpeg_quality=95, max_workers=4):
+def process_images_in_parallel(input_folder, output_folder, jpeg_quality=80, max_workers=4):
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
@@ -148,8 +146,8 @@ def process_images_in_parallel(input_folder, output_folder, jpeg_quality=95, max
 # Function 10: Main execution block
 if __name__ == "__main__":
     input_folder = 'D:\\Desktop\\AI361\\project\\dates-contest-images'
-    output_folder = 'D:\\Desktop\\AI361\\project\\enhanced-images21_2'
-    jpeg_quality = 87
+    output_folder = 'D:\\Desktop\\AI361\\project\\enhanced-images221'
+    jpeg_quality = 90
     max_workers = 4
 
     process_images_in_parallel(input_folder, output_folder, jpeg_quality, max_workers)
